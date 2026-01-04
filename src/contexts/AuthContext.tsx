@@ -9,7 +9,11 @@ import React, {
 } from "react";
 import Cookies from "js-cookie";
 
-export type UserProfile = "admin" | "user_meal_voucher" | "user_food_voucher";
+export enum UserProfile {
+  ADMIN = "admin",
+  USER_MEAL_VOUCHER = "user_meal_voucher",
+  USER_FOOD_VOUCHER = "user_food_voucher",
+}
 
 export interface User {
   id: number;

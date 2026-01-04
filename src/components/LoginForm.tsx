@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Utensils, Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
+import { Utensils, Lock, AlertCircle, Loader2, User } from "lucide-react";
 import { toast } from "sonner";
 
 export function LoginForm() {
@@ -53,7 +53,7 @@ export function LoginForm() {
             <Utensils className="w-8 h-8 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold">
-            Saldo Alimentação
+            Saldo Alimentação / Refeição
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             Entre com suas credenciais para acessar o sistema
@@ -64,14 +64,14 @@ export function LoginForm() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
-                Email
+                Usuário
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="text"
-                  placeholder="seu@email.com"
+                  placeholder="natalia / erick"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 h-11"
@@ -124,22 +124,6 @@ export function LoginForm() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 p-4 rounded-lg bg-muted/50 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">
-              Credenciais de teste:
-            </p>
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>
-                <span className="font-medium">Admin:</span> admin@empresa.com /
-                admin123
-              </p>
-              <p>
-                <span className="font-medium">Usuário:</span> joao@empresa.com /
-                user123
-              </p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

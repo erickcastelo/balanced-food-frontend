@@ -1,10 +1,18 @@
 import React from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, UserProfile } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Utensils, LogOut, User, Shield } from "lucide-react";
 
 export function Header() {
   const { user, logout } = useAuth();
+
+  const getTitle = () => {
+    if (user?.role === "admin") return "Total";
+
+    if (user.role === UserProfile.USER_FOOD_VOUCHER) return "Alimentação";
+
+    if (user.role === UserProfile.USER_MEAL_VOUCHER) return "Refeição";
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-lg">
@@ -15,7 +23,7 @@ export function Header() {
               <Utensils className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-foreground">Saldo Alimentação</h1>
+              <h1 className="font-bold text-foreground">{`Saldo ${getTitle()}`}</h1>
               <p className="text-xs text-muted-foreground">
                 Controle de gastos
               </p>
@@ -29,10 +37,7 @@ export function Header() {
               ) : (
                 <User className="w-4 h-4 text-muted-foreground" />
               )}
-              <span className="text-sm font-medium">{user?.nome}</span>
-              <span className="text-xs text-muted-foreground px-1.5 py-0.5 rounded bg-background">
-                {user?.name}
-              </span>
+              <span className="text-sm font-medium">{user?.name}</span>
             </div>
 
             <Button
