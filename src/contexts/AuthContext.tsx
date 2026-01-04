@@ -9,14 +9,11 @@ import React, {
 } from "react";
 import Cookies from "js-cookie";
 
-export type UserProfile = "admin" | "usuario";
+export type UserProfile = "admin" | "user_meal_voucher" | "user_food_voucher";
 
 export interface User {
   id: number;
-  nome?: string;
   name: string;
-  email?: string;
-  perfil?: UserProfile;
   role: UserProfile;
 }
 

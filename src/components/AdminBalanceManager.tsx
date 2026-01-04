@@ -196,7 +196,7 @@ export function AdminBalanceManager() {
             {saldosMensais
               .sort((a, b) => b.ano - a.ano || b.mes - a.mes)
               .map((saldo, index) => {
-                const info = getSaldoAtual(saldo.mes, saldo.ano);
+                const info = getSaldoAtual();
                 return (
                   <div
                     key={saldo.id}
