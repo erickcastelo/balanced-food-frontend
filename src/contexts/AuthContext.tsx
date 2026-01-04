@@ -13,9 +13,11 @@ export type UserProfile = "admin" | "usuario";
 
 export interface User {
   id: number;
-  nome: string;
-  email: string;
-  perfil: UserProfile;
+  nome?: string;
+  name: string;
+  email?: string;
+  perfil?: UserProfile;
+  role: UserProfile;
 }
 
 interface AuthContextType {
@@ -39,7 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, senha: string): Promise<boolean> => {
-      // Simulate API call delay
       const response = await instance.post("/login", {
         userId: email,
         password: senha,
@@ -65,8 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const me = useCallback(async () => {
     const response = await instance.get(`/me/${userWithToken.token}`);
-    const { id, email, name, perfil } = response.data;
-    const user: User = { id, email, nome: name, perfil };
+    const { id, name, role } = response.data;
+    const user: User = { id, name, role };
     setUserWithToken((prev) => {
       return {
         ...prev,
@@ -83,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token: "",
       };
     });
+    Cookies.remove("TOKEN");
   }, []);
 
   return (

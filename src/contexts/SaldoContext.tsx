@@ -49,14 +49,14 @@ interface SaldoContextType {
     adminId: number
   ) => void;
   updateSaldoMensal: (id: number, valorInicial: number) => void;
-  addGasto: (
-    usuarioId: number,
-    valor: number,
-    descricao: string,
-    dataGasto: Date
-  ) => boolean;
+
   simularGasto: (valor: number) => SimulacaoResult | null;
-  getGastosPorMes: (mes: number, ano: number, usuarioId?: number) => Gasto[];
+  getGastosPorMes: () => {
+    year: number;
+    month: number;
+    histories: ExpenseHistory[];
+  };
+  fetchExpense: () => Promise<void>;
 }
 
 const SaldoContext = createContext<SaldoContextType | undefined>(undefined);
@@ -133,9 +133,18 @@ const initialGastos: Gasto[] = [
   },
 ];
 
+export type ExpenseHistory = {
+  description: string;
+  amount: number;
+  expenseDate: Date;
+};
+
 type ExpenseResponse = {
   amount: number;
   totalExpenses: number;
+  year: number;
+  month: number;
+  expenseHistory: ExpenseHistory[];
 };
 
 export function SaldoProvider({ children }: { children: ReactNode }) {
@@ -146,6 +155,9 @@ export function SaldoProvider({ children }: { children: ReactNode }) {
   const [expense, setExpense] = useState<ExpenseResponse>({
     amount: 0,
     totalExpenses: 0,
+    year: 0,
+    month: 0,
+    expenseHistory: [],
   });
 
   const fetchExpense = useCallback(async () => {
@@ -153,6 +165,9 @@ export function SaldoProvider({ children }: { children: ReactNode }) {
     setExpense(() => ({
       amount: response.amount,
       totalExpenses: response.totalExpenses,
+      year: response.year,
+      month: response.month,
+      expenseHistory: response.expenseHistory,
     }));
   }, []);
 
@@ -189,41 +204,9 @@ export function SaldoProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const addGasto = useCallback(
-    (
-      usuarioId: number,
-      valor: number,
-      descricao: string,
-      dataGasto: Date
-    ): boolean => {
-      const mes = dataGasto.getMonth() + 1;
-      const ano = dataGasto.getFullYear();
-      const saldo = saldosMensais.find((s) => s.mes === mes && s.ano === ano);
-
-      if (!saldo) return false;
-
-      const saldoInfo = getSaldoAtual(mes, ano);
-      if (!saldoInfo || saldoInfo.saldoDisponivel < valor) return false;
-
-      const newGasto: Gasto = {
-        id: Math.max(...gastos.map((g) => g.id), 0) + 1,
-        usuarioId,
-        saldoId: saldo.id,
-        valor,
-        descricao,
-        dataGasto,
-        criadoEm: new Date(),
-      };
-
-      setGastos((prev) => [...prev, newGasto]);
-      return true;
-    },
-    [saldosMensais, gastos, getSaldoAtual]
-  );
-
   const simularGasto = useCallback(
     (valor: number): SimulacaoResult | null => {
-      const saldoInfo = getSaldoAtual(currentMonth, currentYear);
+      const saldoInfo = getSaldoAtual();
       if (!saldoInfo) return null;
 
       const saldoAposSimulacao = saldoInfo.saldoDisponivel - valor;
@@ -242,23 +225,13 @@ export function SaldoProvider({ children }: { children: ReactNode }) {
     [getSaldoAtual]
   );
 
-  const getGastosPorMes = useCallback(
-    (mes: number, ano: number, usuarioId?: number): Gasto[] => {
-      const saldo = saldosMensais.find((s) => s.mes === mes && s.ano === ano);
-      if (!saldo) return [];
-
-      return gastos
-        .filter(
-          (g) =>
-            g.saldoId === saldo.id && (!usuarioId || g.usuarioId === usuarioId)
-        )
-        .sort(
-          (a, b) =>
-            new Date(b.dataGasto).getTime() - new Date(a.dataGasto).getTime()
-        );
-    },
-    [saldosMensais, gastos]
-  );
+  const getGastosPorMes = useCallback(() => {
+    return {
+      year: expense.year,
+      month: expense.month,
+      histories: expense.expenseHistory,
+    };
+  }, [expense.year, expense.month, expense.expenseHistory]);
 
   return (
     <SaldoContext.Provider
@@ -268,9 +241,9 @@ export function SaldoProvider({ children }: { children: ReactNode }) {
         getSaldoAtual,
         addSaldoMensal,
         updateSaldoMensal,
-        addGasto,
         simularGasto,
         getGastosPorMes,
+        fetchExpense,
       }}
     >
       {children}

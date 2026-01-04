@@ -19,3 +19,19 @@ instance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const { status, data } = error.response;
+
+      if (status === 401) {
+        Cookies.remove("TOKEN");
+        window.location.href = "/";
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);

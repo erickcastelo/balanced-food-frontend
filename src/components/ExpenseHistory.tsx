@@ -1,10 +1,16 @@
-import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSaldo, Gasto } from '@/contexts/SaldoContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { History, Receipt, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSaldo, Gasto } from "@/contexts/SaldoContext";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { History, Receipt, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface ExpenseHistoryProps {
   showAllUsers?: boolean;
@@ -14,17 +20,14 @@ export function ExpenseHistory({ showAllUsers = false }: ExpenseHistoryProps) {
   const { user } = useAuth();
   const { getGastosPorMes } = useSaldo();
 
-  const currentDate = new Date();
-  const gastos = getGastosPorMes(
-    currentDate.getMonth() + 1, 
-    currentDate.getFullYear(),
-    showAllUsers ? undefined : user?.id
-  );
+  const gastos = getGastosPorMes();
+
+  const currentDate = new Date(gastos.year, gastos.month - 1, 1);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
 
@@ -48,16 +51,16 @@ export function ExpenseHistory({ showAllUsers = false }: ExpenseHistoryProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {gastos.length === 0 ? (
+        {gastos.histories.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Receipt className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">Nenhum gasto registrado neste mês</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {gastos.map((gasto, index) => (
-              <div 
-                key={gasto.id}
+            {gastos.histories.map((gasto, index) => (
+              <div
+                key={history + ""}
                 className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors animate-fade-in"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
@@ -65,15 +68,17 @@ export function ExpenseHistory({ showAllUsers = false }: ExpenseHistoryProps) {
                   <Receipt className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate">{gasto.descricao}</p>
+                  <p className="font-medium text-foreground truncate">
+                    {gasto.description}
+                  </p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="w-3 h-3" />
-                    {formatDate(gasto.dataGasto)}
+                    {formatDate(gasto.expenseDate)}
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-destructive">
-                    - {formatCurrency(gasto.valor)}
+                    - {formatCurrency(gasto.amount)}
                   </p>
                 </div>
               </div>

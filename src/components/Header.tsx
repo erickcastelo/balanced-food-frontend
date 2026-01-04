@@ -1,7 +1,7 @@
-import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Utensils, LogOut, User, Shield } from 'lucide-react';
+import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Utensils, LogOut, User, Shield } from "lucide-react";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -16,25 +16,27 @@ export function Header() {
             </div>
             <div>
               <h1 className="font-bold text-foreground">Saldo Alimentação</h1>
-              <p className="text-xs text-muted-foreground">Controle de gastos</p>
+              <p className="text-xs text-muted-foreground">
+                Controle de gastos
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted">
-              {user?.perfil === 'admin' ? (
+              {user?.role === "admin" ? (
                 <Shield className="w-4 h-4 text-primary" />
               ) : (
                 <User className="w-4 h-4 text-muted-foreground" />
               )}
               <span className="text-sm font-medium">{user?.nome}</span>
               <span className="text-xs text-muted-foreground px-1.5 py-0.5 rounded bg-background">
-                {user?.perfil === 'admin' ? 'Admin' : 'Usuário'}
+                {user?.name}
               </span>
             </div>
-            
-            <Button 
-              variant="ghost" 
+
+            <Button
+              variant="ghost"
               size="icon"
               onClick={logout}
               className="text-muted-foreground hover:text-foreground"

@@ -1,74 +1,85 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSaldo } from '@/contexts/SaldoContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Plus, Loader2, CheckCircle2, Edit2 } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSaldo } from "@/contexts/SaldoContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Settings, Plus, Loader2, CheckCircle2, Edit2 } from "lucide-react";
+import { toast } from "sonner";
+import CurrencyInput from "react-currency-input-field";
+import { cn } from "@/lib/utils";
+import { instance } from "@/lib/api";
 
 export function AdminBalanceManager() {
   const { user } = useAuth();
-  const { saldosMensais, addSaldoMensal, updateSaldoMensal, getSaldoAtual } = useSaldo();
-  
+  const { saldosMensais, addSaldoMensal, updateSaldoMensal, getSaldoAtual } =
+    useSaldo();
+
   const [mes, setMes] = useState((new Date().getMonth() + 1).toString());
   const [ano, setAno] = useState(new Date().getFullYear().toString());
-  const [valorInicial, setValorInicial] = useState('');
+  const [valorInicial, setValorInicial] = useState<number>(null);
+  const [foodAmount] = useState<number>(630);
+  const [mealAmount, setMealAmount] = useState<number>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
 
   const meses = [
-    { value: '1', label: 'Janeiro' },
-    { value: '2', label: 'Fevereiro' },
-    { value: '3', label: 'Março' },
-    { value: '4', label: 'Abril' },
-    { value: '5', label: 'Maio' },
-    { value: '6', label: 'Junho' },
-    { value: '7', label: 'Julho' },
-    { value: '8', label: 'Agosto' },
-    { value: '9', label: 'Setembro' },
-    { value: '10', label: 'Outubro' },
-    { value: '11', label: 'Novembro' },
-    { value: '12', label: 'Dezembro' },
+    { value: "1", label: "Janeiro" },
+    { value: "2", label: "Fevereiro" },
+    { value: "3", label: "Março" },
+    { value: "4", label: "Abril" },
+    { value: "5", label: "Maio" },
+    { value: "6", label: "Junho" },
+    { value: "7", label: "Julho" },
+    { value: "8", label: "Agosto" },
+    { value: "9", label: "Setembro" },
+    { value: "10", label: "Outubro" },
+    { value: "11", label: "Novembro" },
+    { value: "12", label: "Dezembro" },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
+    try {
+      e.preventDefault();
+      if (!user) return;
 
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
+      setIsLoading(true);
+      await instance.post("/balance", {
+        month: parseInt(mes),
+        year: parseInt(ano),
+        totalAmount: valorInicial,
+        foodAmount,
+        mealAmount,
+      });
 
-    const valor = parseFloat(valorInicial.replace(',', '.'));
-    const mesNum = parseInt(mes);
-    const anoNum = parseInt(ano);
+      toast.success("Saldo criado com sucesso!");
 
-    const existingSaldo = saldosMensais.find(s => s.mes === mesNum && s.ano === anoNum);
-
-    if (existingSaldo) {
-      updateSaldoMensal(existingSaldo.id, valor);
-      toast.success('Saldo atualizado com sucesso!');
-    } else {
-      addSaldoMensal(mesNum, anoNum, valor, user.id);
-      toast.success('Saldo criado com sucesso!');
+      setValorInicial(null);
+    } catch (error) {
+      toast.error("Algo deu errado. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
-
-    setValorInicial('');
-    setIsLoading(false);
   };
 
-  const handleEdit = (saldo: typeof saldosMensais[0]) => {
+  const handleEdit = (saldo: (typeof saldosMensais)[0]) => {
     setMes(saldo.mes.toString());
     setAno(saldo.ano.toString());
-    setValorInicial(saldo.valorInicial.toString());
+    setValorInicial(saldo.valorInicial);
     setEditingId(saldo.id);
   };
 
@@ -81,7 +92,9 @@ export function AdminBalanceManager() {
           </div>
           <div>
             <CardTitle className="text-lg">Gerenciar Saldo Mensal</CardTitle>
-            <CardDescription>Configure o saldo inicial de cada mês</CardDescription>
+            <CardDescription>
+              Configure o saldo inicial de cada mês
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -96,8 +109,10 @@ export function AdminBalanceManager() {
                 onChange={(e) => setMes(e.target.value)}
                 className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                {meses.map(m => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
+                {meses.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -114,21 +129,51 @@ export function AdminBalanceManager() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="valorInicial">Valor Inicial (R$)</Label>
-              <Input
+              <CurrencyInput
+                intlConfig={{ locale: "pt-BR", currency: "BRL" }}
+                className={cn(
+                  "flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                )}
                 id="valorInicial"
-                type="text"
                 placeholder="0,00"
-                value={valorInicial}
-                onChange={(e) => setValorInicial(e.target.value)}
-                className="h-11"
+                onValueChange={(_, __, values) => {
+                  setValorInicial(values?.float ?? null);
+                }}
+                onBlur={() => setMealAmount(valorInicial - 630)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="foodAmount">Valor Refeição (R$)</Label>
+              <CurrencyInput
+                intlConfig={{ locale: "pt-BR", currency: "BRL" }}
+                className={cn(
+                  "flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                )}
+                id="foodAmount"
+                value={mealAmount}
+                placeholder="0,00"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="foodAmount">Valor Alimentação (R$)</Label>
+              <CurrencyInput
+                intlConfig={{ locale: "pt-BR", currency: "BRL" }}
+                className={cn(
+                  "flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                )}
+                id="foodAmount"
+                value={foodAmount}
+                placeholder="0,00"
                 required
               />
             </div>
           </div>
-          
-          <Button 
-            type="submit" 
-            variant="hero" 
+
+          <Button
+            type="submit"
+            variant="hero"
             className="w-full sm:w-auto"
             disabled={!valorInicial || isLoading}
           >
@@ -139,19 +184,21 @@ export function AdminBalanceManager() {
             ) : (
               <Plus className="w-4 h-4" />
             )}
-            {editingId ? 'Atualizar Saldo' : 'Criar Saldo'}
+            {editingId ? "Atualizar Saldo" : "Criar Saldo"}
           </Button>
         </form>
 
         <div className="border-t pt-6">
-          <h4 className="text-sm font-medium text-muted-foreground mb-4">Saldos Configurados</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-4">
+            Saldos Configurados
+          </h4>
           <div className="space-y-3">
             {saldosMensais
               .sort((a, b) => b.ano - a.ano || b.mes - a.mes)
               .map((saldo, index) => {
                 const info = getSaldoAtual(saldo.mes, saldo.ano);
                 return (
-                  <div 
+                  <div
                     key={saldo.id}
                     className="flex items-center justify-between p-3 rounded-xl bg-muted/50 animate-fade-in"
                     style={{ animationDelay: `${index * 50}ms` }}
@@ -161,12 +208,12 @@ export function AdminBalanceManager() {
                         {meses[saldo.mes - 1].label} {saldo.ano}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Inicial: {formatCurrency(saldo.valorInicial)} | 
+                        Inicial: {formatCurrency(saldo.valorInicial)} |
                         Disponível: {formatCurrency(info?.saldoDisponivel || 0)}
                       </p>
                     </div>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleEdit(saldo)}
                     >

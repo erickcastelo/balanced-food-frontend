@@ -19,7 +19,7 @@ import { instance } from "@/lib/api";
 
 export function ExpenseForm() {
   const [valor, setValor] = useState<number>(null);
-  const [descricao, setDescricao] = useState("");
+  const [descricao, setDescricao] = useState("Supermercado");
   const [dataGasto, setDataGasto] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -32,7 +32,7 @@ export function ExpenseForm() {
   } | null>(null);
 
   const { user } = useAuth();
-  const { addGasto, simularGasto } = useSaldo();
+  const { simularGasto, fetchExpense } = useSaldo();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -54,25 +54,18 @@ export function ExpenseForm() {
         expenseDate: new Date(dataGasto),
       });
 
-      // const valorNumerico = valor.replace("R$ ", "");
-      // const success = addGasto(
-      //   user.id,
-      //   valorNumerico,
-      //   descricao,
-      //   new Date(dataGasto)
-      // );
-
       if (response) {
         toast.success("Gasto registrado com sucesso!");
         setValor(null);
         setDescricao("");
         setDataGasto(new Date().toISOString().split("T")[0]);
         setSimulationResult(null);
+        await fetchExpense();
       } else {
         toast.error("Saldo insuficiente ou mês sem saldo configurado");
       }
     } catch (error) {
-      console.error(error);
+      toast.error("Algo deu errado. Tente novamente.");
     } finally {
       setIsLoading(false);
     }

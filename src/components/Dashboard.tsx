@@ -16,7 +16,7 @@ export function Dashboard() {
   const currentDate = new Date();
   const saldoInfo = getSaldoAtual();
 
-  const isAdmin = user?.perfil === "admin";
+  const isAdmin = user?.role === "admin";
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,15 +48,8 @@ export function Dashboard() {
         </div>
 
         {isAdmin ? (
-          <Tabs defaultValue="gastos" className="space-y-6">
+          <Tabs defaultValue="historico" className="space-y-6">
             <TabsList className="grid w-full grid-cols-3 h-12">
-              <TabsTrigger
-                value="gastos"
-                className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Receipt className="w-4 h-4" />
-                <span className="hidden sm:inline">Gastos</span>
-              </TabsTrigger>
               <TabsTrigger
                 value="historico"
                 className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
