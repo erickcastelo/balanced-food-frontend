@@ -18,11 +18,14 @@ interface ExpenseHistoryProps {
 
 export function ExpenseHistory({ showAllUsers = false }: ExpenseHistoryProps) {
   const { user } = useAuth();
-  const { getGastosPorMes } = useSaldo();
+  const { getGastosPorMes, getSaldoAtual } = useSaldo();
 
   const gastos = getGastosPorMes();
 
-  const currentDate = new Date(gastos.year, gastos.month - 1, 1);
+  const currentDate =
+    gastos.year && gastos.month
+      ? new Date(gastos.year, gastos.month - 1, 1)
+      : undefined;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -45,7 +48,9 @@ export function ExpenseHistory({ showAllUsers = false }: ExpenseHistoryProps) {
           <div>
             <CardTitle className="text-lg">Histórico de Gastos</CardTitle>
             <CardDescription>
-              {format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })}
+              {currentDate
+                ? format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })
+                : ""}
             </CardDescription>
           </div>
         </div>

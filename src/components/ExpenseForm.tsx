@@ -11,18 +11,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Receipt, Calculator, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  Receipt,
+  Calculator,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import CurrencyInput from "react-currency-input-field";
 import { cn } from "@/lib/utils";
 import { instance } from "@/lib/api";
+import { formatInTimeZone } from "date-fns-tz";
+import { formatDateTimeZone } from "@/utils/DateUtil";
+import { format } from "date-fns";
 
 export function ExpenseForm() {
   const [valor, setValor] = useState<number>(null);
   const [descricao, setDescricao] = useState("Supermercado");
-  const [dataGasto, setDataGasto] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [dataGasto, setDataGasto] = useState(format(new Date(), "yyyy-MM-dd"));
   const [isLoading, setIsLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<{
@@ -32,7 +39,7 @@ export function ExpenseForm() {
   } | null>(null);
 
   const { user } = useAuth();
-  const { simularGasto, fetchExpense } = useSaldo();
+  const { simularGasto, fetchExpense, getSaldoAtual } = useSaldo();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -48,17 +55,17 @@ export function ExpenseForm() {
 
       setIsLoading(true);
 
+      const formatDate = formatDateTimeZone(dataGasto);
+
       const response = await instance.post("/expense", {
         amount: valor,
         description: descricao,
-        expenseDate: new Date(dataGasto),
+        expenseDate: formatDate,
       });
 
       if (response) {
         toast.success("Gasto registrado com sucesso!");
         setValor(null);
-        setDescricao("");
-        setDataGasto(new Date().toISOString().split("T")[0]);
         setSimulationResult(null);
         await fetchExpense();
       } else {
@@ -95,6 +102,9 @@ export function ExpenseForm() {
   };
 
   const isFormValid = valor && descricao.length && dataGasto;
+  const { valorInicial, saldoDisponivel } = getSaldoAtual();
+
+  const error = valor > saldoDisponivel;
 
   return (
     <Card className="shadow-card animate-fade-in">
@@ -121,7 +131,7 @@ export function ExpenseForm() {
                 className={cn(
                   "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 )}
-                // value={valor}
+                disabled={valorInicial === 0}
                 onValueChange={(value) => {
                   setValor(value ? parseFloat(value.replace(",", ".")) : null);
                 }}
@@ -136,10 +146,18 @@ export function ExpenseForm() {
                 onChange={(e) => setDataGasto(e.target.value)}
                 max={new Date().toISOString().split("T")[0]}
                 className="h-11"
+                disabled={valorInicial === 0}
                 required
               />
             </div>
           </div>
+
+          {error && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm animate-fade-in">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>O valor gasto não pode exceder o saldo disponível.</span>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="descricao">Descrição</Label>
@@ -151,10 +169,10 @@ export function ExpenseForm() {
               onChange={(e) => setDescricao(e.target.value)}
               className="h-11"
               minLength={3}
+              disabled={valorInicial === 0}
               required
             />
           </div>
-
           {simulationResult && (
             <div className="p-4 rounded-xl bg-muted animate-fade-in space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -204,14 +222,13 @@ export function ExpenseForm() {
               </p>
             </div>
           )}
-
           <div className="flex gap-3">
             <Button
               type="button"
               variant="secondary"
               className="flex-1"
               onClick={handleSimular}
-              disabled={!valor || isSimulating}
+              disabled={!valor || error || isSimulating}
             >
               {isSimulating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -224,7 +241,7 @@ export function ExpenseForm() {
               type="submit"
               variant="hero"
               className="flex-1"
-              disabled={!isFormValid || isLoading}
+              disabled={!isFormValid || error || isLoading}
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
