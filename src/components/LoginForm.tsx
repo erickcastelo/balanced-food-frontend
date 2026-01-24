@@ -77,6 +77,7 @@ export function LoginForm() {
                   className="pl-10 h-11"
                   required
                   disabled={isLoading}
+                  autoCapitalize="none"
                 />
               </div>
             </div>
