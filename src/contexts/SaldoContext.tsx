@@ -7,6 +7,7 @@ import React, {
   ReactNode,
   useEffect,
 } from "react";
+import { User } from "./AuthContext";
 
 export interface SaldoMensal {
   id: number;
@@ -137,6 +138,7 @@ export type ExpenseHistory = {
   description: string;
   amount: number;
   expenseDate: Date;
+  user: Pick<User, "name">;
 };
 
 type ExpenseResponse = {

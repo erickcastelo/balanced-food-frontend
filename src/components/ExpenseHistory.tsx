@@ -78,7 +78,9 @@ export function ExpenseHistory({ showAllUsers = false }: ExpenseHistoryProps) {
                   </p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="w-3 h-3" />
-                    {formatDate(gasto.expenseDate)}
+                    {user?.role === "admin"
+                      ? `${formatDate(gasto.expenseDate)} - ${gasto.user.name}`
+                      : formatDate(gasto.expenseDate)}
                   </div>
                 </div>
                 <div className="text-right">
