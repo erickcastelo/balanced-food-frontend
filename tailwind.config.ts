@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -14,7 +19,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -101,9 +106,13 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.7" },
         },
-        "shimmer": {
+        shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
         },
       },
       animation: {
@@ -113,7 +122,9 @@ export default {
         "slide-in-right": "slide-in-right 0.4s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
-        "shimmer": "shimmer 2s linear infinite",
+        shimmer: "shimmer 2s linear infinite",
+        float: "float 6s ease-in-out infinite",
+        "spin-slow": "spin 3s linear infinite",
       },
     },
   },

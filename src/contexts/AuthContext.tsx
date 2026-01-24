@@ -67,6 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const me = useCallback(async () => {
     const response = await instance.get(`/me/${userWithToken.token}`);
+    if (import.meta.env.VITE_PRODUCTION === "true") {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
     const { id, name, role } = response.data;
     const user: User = { id, name, role };
     setUserWithToken((prev) => {

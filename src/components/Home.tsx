@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import React, { useEffect } from "react";
+import { LoadingScreen } from "./LoadingScreen";
 
 export const Home = () => {
   const { me } = useAuth();
@@ -8,5 +9,9 @@ export const Home = () => {
     me();
   }, []);
 
-  return <>Carregando</>;
+  return (
+    <>
+      <LoadingScreen />
+    </>
+  );
 };
