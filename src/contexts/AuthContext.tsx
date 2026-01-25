@@ -8,6 +8,7 @@ import React, {
   useRef,
 } from "react";
 import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 export enum UserProfile {
   ADMIN = "admin",
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return false;
     },
-    []
+    [],
   );
 
   const me = useCallback(async () => {
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
       };
     });
+    toast.success("Login realizado com sucesso!");
   }, [userWithToken.token]);
 
   const logout = useCallback(() => {

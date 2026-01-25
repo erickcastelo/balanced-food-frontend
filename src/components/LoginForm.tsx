@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Utensils, Lock, AlertCircle, Loader2, User } from "lucide-react";
-import { toast } from "sonner";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -28,9 +27,7 @@ export function LoginForm() {
     try {
       const success = await login(email, senha);
 
-      if (success) {
-        toast.success("Login realizado com sucesso!");
-      } else {
+      if (!success) {
         setError("Email ou senha incorretos");
       }
     } catch (err) {
