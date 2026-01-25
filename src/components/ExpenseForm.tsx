@@ -25,6 +25,7 @@ import { instance } from "@/lib/api";
 import { formatInTimeZone } from "date-fns-tz";
 import { formatDateTimeZone } from "@/utils/DateUtil";
 import { format } from "date-fns";
+import { ExpenseConfirmDialog } from "./ExpenseConfirmDialog";
 
 export function ExpenseForm() {
   const [valor, setValor] = useState<number>(null);
@@ -38,6 +39,8 @@ export function ExpenseForm() {
     percentualUsado: number;
   } | null>(null);
 
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
   const { user } = useAuth();
   const { simularGasto, fetchExpense, getSaldoAtual } = useSaldo();
 
@@ -48,9 +51,13 @@ export function ExpenseForm() {
     }).format(value);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleOpenConfirmDialog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowConfirmDialog(true);
+  };
+
+  const handleSubmit = async () => {
     try {
-      e.preventDefault();
       if (!user) return;
 
       setIsLoading(true);
@@ -75,6 +82,7 @@ export function ExpenseForm() {
       toast.error("Algo deu errado. Tente novamente.");
     } finally {
       setIsLoading(false);
+      setShowConfirmDialog(false);
     }
   };
 
@@ -94,7 +102,7 @@ export function ExpenseForm() {
       setSimulationResult(result);
     } else {
       toast.error(
-        "Não foi possível simular. Verifique se há saldo configurado para o mês."
+        "Não foi possível simular. Verifique se há saldo configurado para o mês.",
       );
     }
 
@@ -122,14 +130,14 @@ export function ExpenseForm() {
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleOpenConfirmDialog} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="valor">Valor (R$)</Label>
               <CurrencyInput
                 intlConfig={{ locale: "pt-BR", currency: "BRL" }}
                 className={cn(
-                  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
                 )}
                 disabled={valorInicial === 0}
                 onValueChange={(value) => {
@@ -205,13 +213,13 @@ export function ExpenseForm() {
                     simulationResult.percentualUsado > 80
                       ? "bg-destructive"
                       : simulationResult.percentualUsado > 50
-                      ? "bg-warning"
-                      : "bg-primary"
+                        ? "bg-warning"
+                        : "bg-primary"
                   }`}
                   style={{
                     width: `${Math.min(
                       simulationResult.percentualUsado,
-                      100
+                      100,
                     )}%`,
                   }}
                 />
@@ -253,6 +261,21 @@ export function ExpenseForm() {
           </div>
         </form>
       </CardContent>
+
+      {showConfirmDialog && (
+        <ExpenseConfirmDialog
+          open={showConfirmDialog}
+          onOpenChange={setShowConfirmDialog}
+          onConfirm={handleSubmit}
+          isLoading={isLoading}
+          valor={valor}
+          descricao={descricao}
+          dataGasto={dataGasto}
+          saldoAtual={saldoDisponivel ?? 0}
+          saldoAposGasto={saldoDisponivel - valor}
+          valorInicial={valorInicial ?? 0}
+        />
+      )}
     </Card>
   );
 }
